@@ -12,12 +12,17 @@ package deepstack;
 public class DeepStack<T> {
     Node top = null;
     private int size = 0;
-    private class Node {
+    public class Node {
+        private Node previous = null;
         private Node next = null;
         private T data = null;
 
         public Node(T data){
             this.data = data;
+        }
+
+        public T getData() {
+            return data;
         }
     }
     
@@ -25,7 +30,7 @@ public class DeepStack<T> {
    * Regular push operation to top of the stack. 
    * @param elm The object that is pushed on the stack
    */
-    public void push(T elm) {
+    public Node push(T elm) {
         if (top == null) {
             top = new Node(elm);
         }
@@ -33,8 +38,10 @@ public class DeepStack<T> {
             Node oldElm = top;
             top = new Node(elm);
             top.next = oldElm;
+            oldElm.previous = top;
         }
-        increaseSize();
+        size++;
+        return top;
     }
     
    /**
@@ -43,10 +50,10 @@ public class DeepStack<T> {
     * @param lvl The depth where the object is pushed
     * (top of stack depth is 0)
     */
-    public void push(T elm, int lvl) {
+    public Node push(T elm, int lvl) {
         if(lvl == 0){
-            push(elm);
-            return;
+            Node newElm = push(elm);
+            return newElm;
         }
         if(lvl > size) {
             throw new IndexOutOfBoundsException();
@@ -57,10 +64,42 @@ public class DeepStack<T> {
         }
         Node next = cur.next;
         Node newElm = new Node(elm);
+        
         cur.next = newElm;
         newElm.next = next;
-        increaseSize();
+        next.previous = newElm;
+        newElm.previous = cur;
+        
+        size++;
+        
+        return newElm;
     }
+    
+    /**
+    * Pushes value UNDER existing node exNode. 
+    * @param elm The object that is pushed on the stack
+    * @param exNode Node that already exists in the stack
+    * (top of stack depth is 0)
+    */
+    public Node push(T elm, Node exNode) {
+        Node newElm = new Node(elm);
+        
+        if(exNode.next == null){
+            exNode.next = newElm;
+            newElm.previous = exNode;
+            return newElm;
+        }
+        
+        exNode.next.previous = newElm;
+        newElm.next = exNode.next;
+        exNode.next = newElm;
+        newElm.previous = exNode;
+        
+        size++;
+        
+        return newElm;
+    }
+    
     /**
     * Regular push operation of array of objects. 
     * @param elms The array of objects that is pushed on the stack
@@ -78,8 +117,9 @@ public class DeepStack<T> {
         for(int i = 0; i < lenght; i++){
             Node newElm = new Node(elms[i]);
             newElm.next = top;
+            top.previous = newElm;
             top = newElm;
-            increaseSize();
+            size++;
         } 
     }
     
@@ -111,9 +151,11 @@ public class DeepStack<T> {
         for(int i = lenght - 1; i >= 0; i--){
             Node newElm = new Node(elms[i]);
             newElm.next = cur.next;
+            cur.next.previous = newElm;
             cur.next = newElm;
+            newElm.previous = cur;
             cur = newElm;
-            increaseSize();
+            size++;
         } 
     }
     
@@ -128,7 +170,8 @@ public class DeepStack<T> {
         }
         Node oldElm = top;
         top = oldElm.next;
-        decreaseSize();
+        top.previous = null;
+        size--;
         return oldElm.data;
     }
   /**
@@ -147,9 +190,30 @@ public class DeepStack<T> {
             cur = cur.next;
         }
         Node del = cur.next;
+        cur.next.next.previous = cur;
         cur.next = cur.next.next;
-        decreaseSize();
+        size--;
         return del.data;
+    }
+    
+   /**
+   * Pop a already existing node in stack. After the 
+   * pop operation the object is removed from the stack
+   * @param exNode Node that already exists in the stack
+   * @return T Returns the object on the stack
+   * (top of stack depth is 0)
+   */
+    public T pop(Node exNode){
+        if(exNode == top){
+            top = top.next;
+            top.previous = null;
+        }
+        else {
+            exNode.next.previous = exNode.previous;
+            exNode.previous.next = exNode.next;
+        }
+        size--;
+        return exNode.data;
     }
     
   /**
@@ -209,13 +273,5 @@ public class DeepStack<T> {
     
     public int size() {
         return size;
-    }
-    
-    public void increaseSize() {
-        size++;
-    }
-    
-    public void decreaseSize() {
-        size--;
     }
 }
