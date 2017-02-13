@@ -24,11 +24,17 @@ public class DeepStack<T> {
         public T getData() {
             return data;
         }
+        
+        @Override
+        public String toString() {
+            return "Nodes data: " + data;
+        }
     }
     
   /**
    * Regular push operation to top of the stack. 
    * @param elm The object that is pushed on the stack
+   * @return return node with pushed symbol
    */
     public Node push(T elm) {
         if (top == null) {
@@ -48,12 +54,12 @@ public class DeepStack<T> {
     * Push operation to certain depth. 
     * @param elm The object that is pushed on the stack
     * @param lvl The depth where the object is pushed
+    * @return return node with pushed symbol
     * (top of stack depth is 0)
     */
     public Node push(T elm, int lvl) {
         if(lvl == 0){
-            Node newElm = push(elm);
-            return newElm;
+            return push(elm);
         }
         if(lvl > size) {
             throw new IndexOutOfBoundsException();
@@ -67,7 +73,9 @@ public class DeepStack<T> {
         
         cur.next = newElm;
         newElm.next = next;
-        next.previous = newElm;
+        if(next != null) {
+            next.previous = newElm;
+        }
         newElm.previous = cur;
         
         size++;
@@ -79,7 +87,8 @@ public class DeepStack<T> {
     * Pushes value UNDER existing node exNode. 
     * @param elm The object that is pushed on the stack
     * @param exNode Node that already exists in the stack
-    * (top of stack depth is 0)
+    * @return return node with pushed symbol
+    * (top of stack depth is 0) 
     */
     public Node push(T elm, Node exNode) {
         Node newElm = new Node(elm);
@@ -185,12 +194,17 @@ public class DeepStack<T> {
         if (isEmpty() || lvl > size){
             throw new IndexOutOfBoundsException();
         }
+        if (lvl == 0) {
+            return pop();
+        }
         Node cur = top;
         for(int i = 0; i < (lvl - 1); i++) {
             cur = cur.next;
         }
         Node del = cur.next;
-        cur.next.next.previous = cur;
+        if (cur.next.next != null) {
+            cur.next.next.previous = cur;
+        }
         cur.next = cur.next.next;
         size--;
         return del.data;
@@ -264,7 +278,9 @@ public class DeepStack<T> {
         StringBuilder sb = new StringBuilder();
         Node cur = top;
         for(int i = 0; i < size ; i++) {
-            sb.append(cur.data);
+            if(cur != null) {
+                sb.append(cur.data);
+            }
             sb.append("\n");
             cur = cur.next;
         }
